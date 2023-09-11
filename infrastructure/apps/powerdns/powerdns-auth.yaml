@@ -70,7 +70,7 @@ spec:
             # templateroot = /etc/powerdns/templates.d
             # templatedestination = '/etc/powerdns/pdns.d'
             - name: PRIMARY_DOMAIN
-              value: "uk.cloudnative.coop"
+              value: "sharing.io"
             - name: TEMPLATE_FILES
               value: "_api,gpsql,dnsupdate,soa-content"
             - name: PDNS_AUTH_API_KEY
@@ -92,7 +92,7 @@ spec:
                   name: powerdns
                   key: postgres_password
             - name: PDNS_SITE_NAME
-              value: "PowerDNS for uk.cloudnative.coop!"
+              value: "PowerDNS for sharing.io!"
           volumeMounts:
             # We could make another configmap
             # or even jinja template this out

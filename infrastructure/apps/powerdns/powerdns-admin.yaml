@@ -84,16 +84,15 @@ spec:
                   name: powerdns
                   key: api_key
             - name: PDNS_SITE_NAME
-              value: powerdns.uk.cloudnative.coop Administration
+              value: powerdns.sharing.io Administration
             - name: PDNS_URL
               value: http://auth-web:8081
             - name: PDNS_VERSION
               value: 4.8.1
             - name: PDNS_ZONES
               value: |-
-                uk.cloudnative.coop
-                uk.ii.coop
-                uk.sharing.io
+                sharing.io
+                container.sharing.io
             - name: PDNS_ADMIN_USER
               valueFrom:
                 secretKeyRef:
@@ -115,9 +114,9 @@ spec:
             - name: SAML_CERT
               value: "/saml.crt"
             - name: SAML_METADATA_URL
-              value: https://sso.uk.cloudnative.coop/application/saml/powerdns/metadata/
+              value: https://sso.sharing.io/application/saml/powerdns/metadata/
             - name: SAML_LOGOUT_URL
-              value: https://sso.uk.cloudnative.coop/application/saml/slo/powerdns/binding/redirect/
+              value: https://sso.sharing.io/application/saml/slo/powerdns/binding/redirect/
             - name: SAML_DEBUG
               value: "True"
             - name: SAML_ENABLED
@@ -205,9 +204,9 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - "powerdns.uk.cloudnative.coop"
+        - "powerdns.sharing.io"
   rules:
-    - host: "powerdns.uk.cloudnative.coop"
+    - host: "powerdns.sharing.io"
       http:
         paths:
           - path: /
