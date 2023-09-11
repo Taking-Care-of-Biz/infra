@@ -8,7 +8,7 @@ resources:
   - cert-manager.yaml
   - coder.yaml
   - cert-manager-pdns.yaml
-  # - gitops.yaml
+  - gitops.yaml
   # - authentik.yaml
   # - minio-operator.yaml
   # - minio-tenant.yaml
