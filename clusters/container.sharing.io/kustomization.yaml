@@ -7,7 +7,7 @@ resources:
   - powerdns.yaml
   - cert-manager.yaml
   - coder.yaml
-  # - cert-manager-pdns.yaml
+  - cert-manager-pdns.yaml
   # - gitops.yaml
   # - authentik.yaml
   # - minio-operator.yaml
