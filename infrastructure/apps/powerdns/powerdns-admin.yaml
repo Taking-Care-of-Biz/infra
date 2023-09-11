@@ -197,13 +197,13 @@ kind: Ingress
 metadata:
   name: powerdns
   namespace: powerdns
-  # annotations:
-  #   cert-manager.io/cluster-issuer: letsencrypt-pdns
-  #   # kubernetes.io/ingress.class: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-http01"
 spec:
   ingressClassName: nginx
   tls:
-    - hosts:
+    - secretName: "powerdns-tls"
+      hosts:
         - "${DNSADMIN_INGRESS:=powerdns.example.com}"
   rules:
     - host: "${DNSADMIN_INGRESS:=powerdns.example.com}"

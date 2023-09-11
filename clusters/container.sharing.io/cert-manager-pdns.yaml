@@ -17,5 +17,7 @@ spec:
     substitute:
       ACME_EMAIL: container@sharing.io
       WILDCARD_DOMAIN: container.sharing.io
-      ALLOWED_ZONE: container.sharing.io
+      ALLOWED_ZONE: sharing.io
+      ALLOWED_ZONE2: container.sharing.io
+      PDNS_API_URL: https://pdns.sharing.io
       # DOMAIN: uk.sharing.io
