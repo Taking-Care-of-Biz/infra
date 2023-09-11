@@ -12,7 +12,7 @@ spec:
   selector:
     powerdns: auth
   externalIPs:
-    - 145.40.113.209
+    - ${DNS_IP:=136.144.49.79}
   ports:
     - name: dns-tcp
       port: 53
