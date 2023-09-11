@@ -6,14 +6,13 @@ resources:
   - nginx.yaml # EXTERNAL_IP
   - powerdns.yaml
   - cert-manager.yaml
+  - coder.yaml
   # - cert-manager-pdns.yaml
   # - gitops.yaml
   # - authentik.yaml
-  # - coder.yaml
   # - minio-operator.yaml
   # - minio-tenant.yaml
   # - vcluster.yaml
-  # - powerdns.yaml
   # - harbor.yaml
   # - ghost.yaml
   # - reflector.yaml
