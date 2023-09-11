@@ -119,9 +119,9 @@ spec:
         #       key: CODER_OIDC_CLIENT_SECRET
         # authentik as OIDC
         - name: CODER_OIDC_SIGN_IN_TEXT
-          value: "Sign in with auth.${CODER_WILDCARD_DOMAIN:=example.com}"
+          value: "${CODER_OIDC_SIGN_IN_TEXT:=sso.company.com}"
         - name: CODER_OIDC_ISSUER_URL
-          value: "https://auth.${CODER_WILDCARD_DOMAIN:=example.com}/application/o/coder/"
+          value: "${CODER_OIDC_ISSUER_URL:=https:sso.company.com/application/o/codercontainer/"
         - name: CODER_OIDC_ICON_URL
           value: "https://goauthentik.io/img/icon.png"
         # - name: CODER_OIDC_USERNAME_FIELD

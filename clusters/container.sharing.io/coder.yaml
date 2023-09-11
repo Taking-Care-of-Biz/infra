@@ -39,6 +39,8 @@ spec:
       CODER_HOST: coder.container.sharing.io
       CODER_ACCESS_URL: https://coder.container.sharing.io
       CODER_WILDCARD_DOMAIN: "container.sharing.io"
+      CODER_OIDC_SIGN_IN_TEXT: "Sign in with sso.sharing.io"
+      CODER_OIDC_ISSUER_URL: "https://sso.sharing.io/application/o/codercontainer/"
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
