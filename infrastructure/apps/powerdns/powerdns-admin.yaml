@@ -84,15 +84,15 @@ spec:
                   name: powerdns
                   key: api_key
             - name: PDNS_SITE_NAME
-              value: powerdns.sharing.io Administration
+              value: ${POWERDNS_INGRESS:=powerdns.example.com} Administration
             - name: PDNS_URL
               value: http://auth-web:8081
             - name: PDNS_VERSION
               value: 4.8.1
             - name: PDNS_ZONES
               value: |-
-                sharing.io
-                container.sharing.io
+                ${DNS_DOMAIN:=example.com}
+                container.${DNS_DOMAIN:=example.com}
             - name: PDNS_ADMIN_USER
               valueFrom:
                 secretKeyRef:
@@ -114,9 +114,9 @@ spec:
             - name: SAML_CERT
               value: "/saml.crt"
             - name: SAML_METADATA_URL
-              value: https://sso.sharing.io/application/saml/powerdns/metadata/
+              value: ${SAML_URL:=https://sso.example.com}/application/saml/powerdns/metadata/
             - name: SAML_LOGOUT_URL
-              value: https://sso.sharing.io/application/saml/slo/powerdns/binding/redirect/
+              value: ${SAML_URL:=https://sso.example.com}/application/saml/slo/powerdns/binding/redirect/
             - name: SAML_DEBUG
               value: "True"
             - name: SAML_ENABLED
@@ -204,9 +204,9 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - "powerdns.sharing.io"
+        - "${DNSADMIN_INGRESS:=powerdns.example.com}"
   rules:
-    - host: "powerdns.sharing.io"
+    - host: "${DNSADMIN_INGRESS:=powerdns.example.com}"
       http:
         paths:
           - path: /
