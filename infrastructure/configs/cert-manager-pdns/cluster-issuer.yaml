@@ -57,7 +57,7 @@ spec:
             solverName: pdns
             config:
               # zone: example.com # (Optional): When not provided the Zone will obtained by cert-manager's ResolvedZone
-              host: https://powerdns.ii.nz
+              host: ${PDNS_API_URL:=https://powerdns.ii.nz}
               serverID: "localhost"
               ttl: 60
               headers:
@@ -101,7 +101,7 @@ spec:
             # https://github.com/zachomedia/cert-manager-webhook-pdns/blob/main/main.go#L76
             config:
               # zone: example.com # (Optional): When not provided the Zone will obtained by cert-manager's ResolvedZone
-              host: https://powerdns.ii.nz
+              host: ${PDNS_API_URL:=https://powerdns.ii.nz}
               serverID: "localhost"
               ttl: 60
               headers:
