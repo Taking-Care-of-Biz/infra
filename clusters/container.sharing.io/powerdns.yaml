@@ -19,5 +19,5 @@ spec:
       DNS_IP: 136.144.49.79
       DNS_DOMAIN: sharing.io
       PDNS_API_INGRESS: pdns.sharing.io
-      POWERDNS_API_INGRESS: powerdns.sharing.io
+      DNSADMIN_INGRESS: powerdns.sharing.io
       SAML_URL: https://sso.sharing.io
