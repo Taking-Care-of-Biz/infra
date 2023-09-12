@@ -9,7 +9,7 @@ resources:
   - coder.yaml
   - cert-manager-pdns.yaml
   - gitops.yaml
-  - authentik.yaml
+  # - authentik.yaml
   # - minio-operator.yaml
   # - minio-tenant.yaml
   # - vcluster.yaml
