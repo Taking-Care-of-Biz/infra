@@ -132,7 +132,6 @@ echo ssh $ID@sos.$FACILITY.platformequinix.com
 ssh a43f2022-541b-4af5-a178-cfe4f51651d0@sos.da11.platformequinix.com
 #+end_src
 
-
 ** Domain
 NS Records and a separate tsig key are configured on powerdns.ii.nz
 #+name: spacedomain
@@ -144,7 +143,6 @@ echo -n $SPACE_TLD
 #+begin_example
 co.sharing.io
 #+end_example
-
 
 * Connect domain to our IP
 ** What is our IP?
@@ -662,22 +660,22 @@ EOF
 #+end_src
 
 *** list gpg keys
-#+begin_src tmux :env KEY_NAME="k8s.co.sharing.io" :sync
+#+begin_src shell
 export KEY_NAME="k8s.co.sharing.io"
 gpg --list-secret-keys "${KEY_NAME}"
 #+end_src
 
 #+RESULTS:
 #+begin_example
-sec   rsa4096 2023-08-28 [SCEAR]
-      6CFB156EEFE7417E2567D5FD37732CFA004DC229
-uid           [ultimate] k8s.uk.sharing.io (flux secrets)
-ssb   rsa4096 2023-08-28 [SEAR]
+sec   rsa4096 2023-09-26 [SCEA]
+      AD66C2AB06C68FAF37C99BEA6F6A844FE5CE7F91
+uid           [ultimate] k8s.co.sharing.io (flux secrets)
+ssb   rsa4096 2023-09-26 [SEA]
 
 #+end_example
 
 *** import into kubernetes
-#+begin_src tmux :env KEY_NAME="k8s.co.sharing.io" :sync
+#+begin_src shell
 export KEY_NAME="k8s.co.sharing.io"
 export KEY_FP=$(gpg --list-secret-keys "${KEY_NAME}" | grep SCEA -A1 | tail -1 | awk '{print $1}')
 kubectl delete secret sops-gpg --namespace=flux-system || true
@@ -689,22 +687,28 @@ kubectl create secret generic sops-gpg \
 
 #+RESULTS:
 #+begin_example
+secret "sops-gpg" deleted
+secret/sops-gpg created
 #+end_example
 
 *** export key into git
-#+begin_src tmux :env KEY_NAME="k8s.co.sharing.io" :results silent :sync
+#+begin_src shell
 export KEY_NAME="k8s.co.sharing.io"
 export KEY_FP=$(gpg --list-secret-keys "${KEY_NAME}" | grep SCEA -A1 | tail -1 | awk '{print $1}')
 # gpg --export --armor "${KEY_FP}" > ./clusters/thinkpad/.sops.pub.asc
-cd ~/sharingio/infra/clusters/co.sharing.io
+cd ~/infra/clusters/co.sharing.io
 gpg --export --armor "${KEY_FP}" > .sops.pub.asc
 #+end_src
+
+#+RESULTS:
+#+begin_example
+#+end_example
 
 *** write SOPS config file
 #+begin_src tmux
 export KEY_NAME="k8s.co.sharing.io"
 export KEY_FP=$(gpg --list-secret-keys "${KEY_NAME}" | grep SCEA -A1 | tail -1 | awk '{print $1}')
-cd ~/sharingio/infra/clusters/co.sharing.io
+cd ~/infr/acluster/sco.sharing.io
 cat <<EOF >> ./.sops.yaml
 creation_rules:
   - path_regex: .*.yaml
@@ -2047,7 +2051,7 @@ password:                           12 bytes
 ** Variables
 # Local Variables:
 # space-domain: "co.sharing.io"
-# tramp-dir: "/ssh:root@136.144.49.79:/"
+# tramp-dir: "/ssh:root@co.sharing.io:/"
 # eval: (setq org-babel-tmux-terminal "kitty")
 # eval: (setq org-babel-tmux-terminal-opts '("--hold"))
 # End:
