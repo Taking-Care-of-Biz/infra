@@ -665,7 +665,7 @@ gpg --export --armor "${KEY_FP}" > .sops.pub.asc
 #+end_example
 
 *** write SOPS config file
-#+begin_src tmux
+#+begin_src shell
 export KEY_NAME="k8s.co.sharing.io"
 export KEY_FP=$(gpg --list-secret-keys "${KEY_NAME}" | grep SCEA -A1 | tail -1 | awk '{print $1}')
 cd ~/infr/acluster/sco.sharing.io
@@ -676,173 +676,12 @@ creation_rules:
     pgp: ${KEY_FP}
 EOF
 #+end_src
+
+#+RESULTS:
+#+begin_example
+#+end_example
+
 * PDNS setup self hosted zones from scratch
-** via pdnsutil within auth-dns
-*** create a zone with NS
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -ti -- \
-  pdnsutil create-zone sharing.io ns.ii.coop
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Also adding one NS record
-#+end_example
-*** records
-**** add second NS to zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -ti -- \
-  pdnsutil add-record sharing.io @ NS ns.workshop.coop.
-#+end_src
-
-#+RESULTS:
-#+begin_example
-New rrset:
-sharing.io. 3600 IN NS ns.ii.coop
-sharing.io. 3600 IN NS ns.workshop.coop
-#+end_example
-**** add A for zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-  pdnsutil add-record sharing.io @ A 136.144.49.79
-#+end_src
-
-#+RESULTS:
-#+begin_example
-New rrset:
-sharing.io. 3600 IN A 136.144.49.79
-#+end_example
-**** add wildcard A for zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-  pdnsutil add-record sharing.io '*' A 136.144.49.79
-#+end_src
-
-#+RESULTS:
-#+begin_example
-New rrset:
-,*.sharing.io. 3600 IN A 136.144.49.79
-#+end_example
-**** list zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil list-zone sharing.io
-#+end_src
-
-#+RESULTS:
-#+begin_example
-$ORIGIN .
-,*.sharing.io	3600	IN	A	136.144.49.79
-sharing.io	3600	IN	A	136.144.49.79
-sharing.io	3600	IN	NS	ns.ii.coop.
-sharing.io	3600	IN	NS	ns.workshop.coop.
-sharing.io	3600	IN	SOA	ns.sharing.io hostmaster.sharing.io 0 10800 3600 604800 3600
-#+end_example
-*** tsig key + activation
-**** import-tsig-key (from vars)
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil import-tsig-key $PDNS_TSIG_KEYNAME $PDNS_TSIG_ALGO $PDNS_TSIG_KEY
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Imported TSIG key sharing.io hmac-sha256
-#+end_example
-**** list-tsig-keys
-#+begin_src shell :sync :results silent
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil list-tsig-keys
-#+end_src
-**** activate-tsig-key
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil activate-tsig-key $DNS_ZONE $PDNS_TSIG_KEYNAME primary
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Enabled TSIG key sharing.io for sharing.io
-#+end_example
-**** activate-tsig-key
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
- pdnsutil set-meta $DNS_ZONE TSIG-ALLOW-DNSUPDATE $PDNS_TSIG_KEYNAME
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Set 'sharing.io' meta TSIG-ALLOW-DNSUPDATE = sharing.io
-#+end_example
-
-**** show zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil show-zone sharing.io
-#+end_src
-
-#+RESULTS:
-#+begin_example
-This is a Native zone
-Zone is not actively secured
-Zone has following allowed TSIG key(s): sharing.io
-Metadata items:
-	TSIG-ALLOW-AXFR	sharing.io
-	TSIG-ALLOW-DNSUPDATE	sharing.io
-#+end_example
-**** get meta
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil get-meta sharing.io
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Metadata for 'sharing.io'
-TSIG-ALLOW-AXFR = sharing.io
-TSIG-ALLOW-DNSUPDATE = sharing.io
-#+end_example
-
-**** check all zones
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil check-all-zones
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Checked 5 records of 'sharing.io', 0 errors, 0 warnings.
-Checked 1 zones, 0 had errors.
-#+end_example
-
-*** nsupdate using TSIG_KEY
-#+begin_src shell :epilogue "\n) 2>&1\n:\n" :prologue "(\nexport KUBECONFIG\n" :wrap "example" :sync
-nsupdate -y "$PDNS_TSIG_ALGO:$PDNS_TSIG_KEYNAME:$PDNS_TSIG_KEY" <<EOF
-update add localhost.$DNS_ZONE 60 A 127.0.0.1
-send
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-#+end_example
-
-*** show zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil show-zone sharing.io
-#+end_src
-
-#+RESULTS:
-#+begin_example
-This is a Native zone
-Zone is not actively secured
-Zone has following allowed TSIG key(s): sharing.io
-Metadata items:
-	TSIG-ALLOW-AXFR	sharing.io
-	TSIG-ALLOW-DNSUPDATE	sharing.io
-#+end_example
-
 ** subzone via pdnsutil
 *** create NS records for new zone
 #+begin_src shell :sync
@@ -1060,234 +899,6 @@ Metadata items:
 	TSIG-ALLOW-DNSUPDATE	sharing.io
 #+end_example
 
-** subzone via pdnsutil
-*** create NS records for new zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -ti -- \
-  pdnsutil add-record uk.sharing.io @ NS ns.workshop.coop.
-kubectl -n powerdns exec svc/auth-dns -ti -- \
-  pdnsutil add-record uk.sharing.io @ NS ns.ii.coop.
-#+end_src
-
-#+RESULTS:
-#+begin_example
-New rrset:
-uk.sharing.io. 3600 IN NS ns.workshop.coop
-uk.sharing.io. 3600 IN NS ns.ii.coop
-uk.sharing.io. 3600 IN NS ns.workshop.coop
-#+end_example
-
-*** create a zone with NS
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -ti -- \
-  pdnsutil create-zone uk.sharing.io ns.ii.coop
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Also adding one NS record
-#+end_example
-*** records
-**** add second NS to zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -ti -- \
-  pdnsutil add-record uk.sharing.io @ NS ns.workshop.coop.
-#+end_src
-
-#+RESULTS:
-#+begin_example
-New rrset:
-uk.sharing.io. 3600 IN NS ns.workshop.coop
-#+end_example
-
-**** add second NS to zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -ti -- \
-  pdnsutil add-record uk.sharing.io @ NS ns.ii.coop.
-#+end_src
-
-#+RESULTS:
-#+begin_example
-New rrset:
-uk.sharing.io. 3600 IN NS ns.workshop.coop
-uk.sharing.io. 3600 IN NS ns.ii.coop
-#+end_example
-
-**** add A for zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-  pdnsutil add-record uk.sharing.io @ A 145.40.113.253
-#+end_src
-
-#+RESULTS:
-#+begin_example
-New rrset:
-uk.sharing.io. 3600 IN A 145.40.113.253
-#+end_example
-**** add wildcard A for zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-  pdnsutil add-record uk.sharing.io '*' A 145.40.113.253
-#+end_src
-
-#+RESULTS:
-#+begin_example
-New rrset:
-,*.uk.sharing.io. 3600 IN A 145.40.113.253
-#+end_example
-**** list zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil list-zone uk.sharing.io
-#+end_src
-
-#+RESULTS:
-#+begin_example
-$ORIGIN .
-,*.uk.sharing.io	3600	IN	A	145.40.113.253
-uk.sharing.io	3600	IN	A	145.40.113.253
-uk.sharing.io	3600	IN	NS	ns.workshop.coop.
-uk.sharing.io	3600	IN	NS	ns.ii.coop.
-uk.sharing.io	3600	IN	SOA	ns.sharing.io hostmaster.sharing.io 0 10800 3600 604800 3600
-#+end_example
-**** activate-tsig-key
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil activate-tsig-key uk.$DNS_ZONE $PDNS_TSIG_KEYNAME primary
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Enabled TSIG key sharing.io for uk.sharing.io
-#+end_example
-**** tsig-allow-dnsupdate
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
- pdnsutil set-meta uk.$DNS_ZONE TSIG-ALLOW-DNSUPDATE $PDNS_TSIG_KEYNAME
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Set 'uk.sharing.io' meta TSIG-ALLOW-DNSUPDATE = sharing.io
-#+end_example
-**** get meta
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil get-meta uk.sharing.io
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Metadata for 'uk.sharing.io'
-TSIG-ALLOW-AXFR = sharing.io
-TSIG-ALLOW-DNSUPDATE = sharing.io
-#+end_example
-
-*** tsig key + activation
-**** import-tsig-key (from vars)
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil import-tsig-key $PDNS_TSIG_KEYNAME $PDNS_TSIG_ALGO $PDNS_TSIG_KEY
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Imported TSIG key sharing.io hmac-sha256
-#+end_example
-**** list-tsig-keys
-#+begin_src shell :sync :results silent
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil list-tsig-keys
-#+end_src
-**** activate-tsig-key
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil activate-tsig-key $DNS_ZONE $PDNS_TSIG_KEYNAME primary
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Enabled TSIG key sharing.io for sharing.io
-#+end_example
-**** tsig-allow-dnsupdate
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
- pdnsutil set-meta $DNS_ZONE TSIG-ALLOW-DNSUPDATE $PDNS_TSIG_KEYNAME
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Set 'sharing.io' meta TSIG-ALLOW-DNSUPDATE = sharing.io
-#+end_example
-
-**** show zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil show-zone sharing.io
-#+end_src
-
-#+RESULTS:
-#+begin_example
-This is a Native zone
-Zone is not actively secured
-Zone has following allowed TSIG key(s): sharing.io
-Metadata items:
-	TSIG-ALLOW-AXFR	sharing.io
-	TSIG-ALLOW-DNSUPDATE	sharing.io
-#+end_example
-**** get meta
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil get-meta sharing.io
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Metadata for 'sharing.io'
-TSIG-ALLOW-AXFR = sharing.io
-TSIG-ALLOW-DNSUPDATE = sharing.io
-#+end_example
-
-**** check all zones
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil check-all-zones
-#+end_src
-
-#+RESULTS:
-#+begin_example
-Checked 5 records of 'sharing.io', 0 errors, 0 warnings.
-Checked 1 zones, 0 had errors.
-#+end_example
-
-*** nsupdate using TSIG_KEY
-#+begin_src shell :epilogue "\n) 2>&1\n:\n" :prologue "(\nexport KUBECONFIG\n" :wrap "example" :sync
-nsupdate -y "$PDNS_TSIG_ALGO:$PDNS_TSIG_KEYNAME:$PDNS_TSIG_KEY" <<EOF
-update add localhost.$DNS_ZONE 60 A 127.0.0.1
-send
-EOF
-#+end_src
-
-#+RESULTS:
-#+begin_example
-#+end_example
-
-*** show zone
-#+begin_src shell :sync
-kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil show-zone sharing.io
-#+end_src
-
-#+RESULTS:
-#+begin_example
-This is a Native zone
-Zone is not actively secured
-Zone has following allowed TSIG key(s): sharing.io
-Metadata items:
-	TSIG-ALLOW-AXFR	sharing.io
-	TSIG-ALLOW-DNSUPDATE	sharing.io
-#+end_example
-
 ** via pdns api
 *** get powerdns server config
 We can't reach powerdns yet so we forward
@@ -1345,9 +956,9 @@ Not Found
 #+end_example
 * cert manager
 ** list zone
-#+begin_src shell :sync
+#+begin_src shell :sync :dir "/ssh:root@container.sharing.io:/"
 kubectl -n powerdns exec svc/auth-dns -- \
-    pdnsutil list-zone sharing.io
+    pdnsutil list-zone co.sharing.io
 #+end_src
 
 #+RESULTS:
@@ -1367,8 +978,9 @@ https://powerdns.ii.nz/admin/manage-keys
 ** cert-manager
 *** create pdns secret
 Note that the TSIG_KEY we retrieve is base64 encoded... it get's double encoded as a kubernetes secret. Most places you use a TSIG_KEY are expecting the base64 value we have here.
-#+begin_src tmux :epilogue "\n) 2>&1\n:\n" :prologue "(\nexport KUBECONFIG\n" :sync :results silent
-cd ~/sharingio/infra/clusters/co.sharing.io
+
+#+begin_src shell
+cd ~/infra/clusters/co.sharing.io
 source .envrc
 mkdir -p secrets
 kubectl -n cert-manager \
@@ -1378,11 +990,19 @@ kubectl -n cert-manager \
     ./secrets/cert-manager-pdns.yaml
 #+end_src
 
+#+RESULTS:
+#+begin_example
+#+end_example
+
 *** encrypt pdns secret
 We need to encrypt the pdns-secret with sops and commit/push so flux can decrypt and apply it
-#+begin_src tmux :epilogue "\n) 2>&1\n:\n" :prologue "(\n" :results silent :sync
+#+begin_src shell
 sops --encrypt --in-place ./secrets/cert-manager-pdns.yaml
 #+end_src
+
+#+RESULTS:
+#+begin_example
+#+end_example
 
 * minio
 ** Login url + user / password
