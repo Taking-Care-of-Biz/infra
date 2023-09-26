@@ -1,0 +1,23 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: certificates-pdns
+  namespace: flux-system
+spec:
+  # dependsOn:
+  #   - name: cert-manager
+  interval: 5m
+  path: "./infrastructure/configs/cert-manager-pdns"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  postBuild:
+    substitute:
+      ACME_EMAIL: container@sharing.io
+      WILDCARD_DOMAIN: co.sharing.io
+      ALLOWED_ZONE: sharing.io
+      ALLOWED_ZONE2: co.sharing.io
+      PDNS_API_URL: https://pdns.sharing.io
+      # DOMAIN: uk.sharing.io

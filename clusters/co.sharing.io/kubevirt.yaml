@@ -1,0 +1,33 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kubevirt
+  namespace: flux-system
+spec:
+  # dependsOn:
+  #   - name: secrets
+  interval: 5m
+  path: "./infrastructure/controllers/kubevirt"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  healthChecks:
+    - apiVersion: apps/v1
+      namespace: kubevirt
+      kind: Deployment
+      name: virt-api
+    - apiVersion: apps/v1
+      namespace: kubevirt
+      kind: Deployment
+      name: virt-controller
+    - apiVersion: apps/v1
+      namespace: kubevirt
+      kind: Deployment
+      name: virt-operator
+  # postBuild:
+  #   substitute:
+  #     DNS01_RECURSIVE_NAMESERVERS_ONLY: "true"
+  #     DNS01_RECURSIVE_NAMESERVERS: 8.8.8.8:53
+  #     # DNS01_RECURSIVE_NAMESERVERS: 123.253.176.253:53
