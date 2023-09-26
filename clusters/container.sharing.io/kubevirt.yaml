@@ -13,11 +13,19 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  # healthChecks:
-  #   - apiVersion: apps/v1
-  #     kind: Deployment
-  #     name: cert-manager
-  #     namespace: cert-manager
+  healthChecks:
+    - apiVersion: apps/v1
+      namespace: kubevirt
+      kind: Deployment
+      name: virt-api
+    - apiVersion: apps/v1
+      namespace: kubevirt
+      kind: Deployment
+      name: virt-controller
+    - apiVersion: apps/v1
+      namespace: kubevirt
+      kind: Deployment
+      name: virt-operator
   # postBuild:
   #   substitute:
   #     DNS01_RECURSIVE_NAMESERVERS_ONLY: "true"
